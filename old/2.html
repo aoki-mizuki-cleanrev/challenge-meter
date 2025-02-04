@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>チャレンジバロメーター</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(to right, #ff0000, #cc0000);
+            font-family: 'Arial', sans-serif;
+            color: white;
+            text-align: center;
+            margin: 0;
+            position: relative;
+        }
+        h1 {
+            font-size: 4em;
+            font-weight: bold;
+            text-shadow: 3px 3px 15px rgba(0, 0, 0, 0.7);
+        }
+        #inputContainer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        input {
+            padding: 12px;
+            font-size: 2em;
+            margin: 8px;
+            border: none;
+            border-radius: 8px;
+            text-align: center;
+        }
+        button {
+            padding: 12px;
+            font-size: 1.5em;
+            margin: 8px;
+            border: none;
+            border-radius: 8px;
+            text-align: center;
+            background: #ffdd57;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #ffcc00;
+        }
+        #countdown {
+            font-size: 4em;
+            font-weight: bold;
+            margin: 20px;
+            display: none;
+        }
+        #volumeMeter {
+            width: 300px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        #volumeBar {
+            height: 100%;
+            width: 0%;
+            background: lime;
+            border-radius: 15px;
+            transition: width 0.1s linear;
+        }
+        #cheerMessage {
+            font-size: 3em;
+            font-weight: bold;
+            margin-top: 20px;
+            display: none;
+            color: yellow;
+            text-shadow: 3px 3px 15px rgba(0, 0, 0, 0.7);
+        }
+        #rankingTable {
+            width: 90%;
+            max-width: 600px;
+            margin-top: 20px;
+            border-collapse: collapse;
+            font-size: 1.5em;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        #rankingTable th, #rankingTable td {
+            border: 2px solid white;
+            padding: 15px;
+            text-align: center;
+        }
+        #rankingTable th {
+            background: #ffcc00;
+            color: black;
+        }
+        #rankingTable tr:first-child td {
+            font-size: 2.2em;
+            font-weight: bold;
+            color: gold;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔥 挑戦バロメーター 🔥</h1>
+    <div id="inputContainer">
+        <input type="text" id="challengerName" placeholder="あなたの名前">
+        <button id="startButton">挑戦開始！</button>
+    </div>
+    <div id="countdown">3</div>
+    <div id="maxVolume">共感ポイント: 0</div>
+    <div id="cheerMessage">👏 拍手と歓声を！ 🎉</div>
+    <div id="volumeMeter"><div id="volumeBar"></div></div>
+    <table id="rankingTable">
+        <thead>
+            <tr>
+                <th>順位</th>
+                <th>名前</th>
+                <th>スコア</th>
+            </tr>
+        </thead>
+        <tbody id="rankingList"></tbody>
+    </table>
+    <script>
+        let stream = null;
+        let challengers = [];
+
+        async function initializeAudio() {
+            if (!stream) {
+                stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            }
+        }
+
+        function updateRanking() {
+            rankingList.innerHTML = challengers.sort((a, b) => b.score - a.score)
+                .map((c, index) => `<tr ${index === 0 ? 'style="font-size: 2em; font-weight: bold; color: gold;"' : ''}><td>${index + 1}</td><td>${c.name}</td><td>${c.score}</td></tr>`)
+                .join("");
+        }
+        
+        document.getElementById('startButton').addEventListener('click', async () => {
+            const challenger = document.getElementById('challengerName').value.trim();
+            if (!challenger) {
+                alert("名前を入力してください！");
+                return;
+            }
+            document.getElementById('countdown').style.display = "block";
+            let countdown = 3;
+            const countdownInterval = setInterval(() => {
+                document.getElementById('countdown').textContent = countdown--;
+                if (countdown < 0) {
+                    clearInterval(countdownInterval);
+                    document.getElementById('countdown').style.display = "none";
+                    document.getElementById('cheerMessage').style.display = "block";
+                    startMeasurement(challenger);
+                }
+            }, 1000);
+        });
+            async function startMeasurement(challenger) {
+            await initializeAudio();
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const mediaStreamSource = audioContext.createMediaStreamSource(stream);
+            const analyser = audioContext.createAnalyser();
+            analyser.fftSize = 256;
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            mediaStreamSource.connect(analyser);
+            let currentMaxVolume = 0;
+            let startTime = Date.now();
+            function updateMeter() {
+                analyser.getByteTimeDomainData(dataArray);
+                let sum = 0;
+                for (let i = 0; i < dataArray.length; i++) {
+                    const value = (dataArray[i] - 128) / 128;
+                    sum += value * value;
+                }
+                let volume = Math.round(Math.sqrt(sum / dataArray.length) * 10000);
+                document.getElementById('maxVolume').textContent = `共感ポイント: ${volume}`;
+                document.getElementById('volumeBar').style.width = Math.min(volume / 200, 100) + "%";
+                if (volume > currentMaxVolume) {
+                    currentMaxVolume = volume;
+                }
+                if (Date.now() - startTime < 7000) {
+                    requestAnimationFrame(updateMeter);
+                } else {
+                    challengers.push({ name: challenger, score: currentMaxVolume });
+                    updateRanking();
+                    document.getElementById('cheerMessage').style.display = "none";
+                }
+            }
+            updateMeter();
+        }
+    </script>
+</body>
+</html>
