@@ -146,14 +146,19 @@ input.card_name {
 }
 
 #js_countdown {
-    border: 1px solid #eee;
+    /* border: 1px solid #eee; */
     height: 500px;
     align-content: center;
     text-align: center;
     font-size: 30rem;
 
+    /* display: none; */
+}
+
+.game_container {
     display: none;
 }
+
 #js_max_volume {
     text-align: center;
     font-size: 32px;
