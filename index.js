@@ -1,6 +1,6 @@
 const insert_area = document.querySelector(".insert_area");
-var challengers = [];
-const CHALLENGE_TIME = 5000; //秒
+var challengers = JSON.parse(window.localStorage.getItem("challengeBarometer")) ?? [];
+const CHALLENGE_TIME = 5000; //秒: 1000 -> 1sec
 
 // ============
 
@@ -15,9 +15,19 @@ function load_top() {
         })
         .then((html_data) => {
             insert_area.innerHTML = html_data;
+
+            // DEBUG
+            const is_localstorage = JSON.parse(window.localStorage.getItem("challengeBarometer"));
+            console.log(is_localstorage == null ? "---ランキングデータはリセットされています---" : "--データあります--");
+
             document.querySelector(".start_btn").addEventListener("click", () => {
                 const challenger_name = document.querySelector(".card_name").value;
-                load_game(challenger_name);
+                if (challenger_name != "") {
+                    load_game(challenger_name);
+                } else {
+                    alert("名前を入力してください！");
+                    return;
+                }
             });
         })
         .catch((er) => console.error("Error!", er));
@@ -35,7 +45,7 @@ function load_game(challenger_name) {
         })
         .then((html_data) => {
             insert_area.innerHTML = html_data;
-            document.querySelector(".container").classList.toggle("top");
+            // document.querySelector(".container").classList.toggle("top");
             let cd = 1;
             //CountDown
             const timer_id = setInterval(() => {
@@ -90,7 +100,6 @@ function load_game(challenger_name) {
                                 bar.style.width = Math.min(volume / 20, 10) + "%";
                                 if (volume > currentMaxVolume) {
                                     currentMaxVolume = volume;
-                                    console.log(currentMaxVolume);
                                 }
                                 point.textContent = volume;
                                 // console.log("currentMaxVolume", currentMaxVolume);
@@ -102,6 +111,7 @@ function load_game(challenger_name) {
                                     console.log("10秒が経過しました。更新を停止します。");
                                     console.log("currentMaxVolume", currentMaxVolume);
                                     challengers.push({ name: challenger_name, score: currentMaxVolume });
+                                    window.localStorage.setItem("challengeBarometer", JSON.stringify(challengers));
                                     // スコア渡す
                                     load_your_score(currentMaxVolume, challenger_name);
                                 }
@@ -147,7 +157,6 @@ function result_score(your_score) {
     const timer_id = setInterval(() => {
         display_score.textContent = i;
         i++;
-        console.log(i < your_score);
         if (i >= your_score + 1) {
             clearInterval(timer_id);
             setTimeout(() => {
@@ -156,7 +165,7 @@ function result_score(your_score) {
                 createConfetti_r();
                 createConfetti_l();
                 setTimeout(() => {
-                    load_ranking();
+                    load_ranking(your_score);
                 }, 2000);
             }, 360);
         }
@@ -166,7 +175,6 @@ function result_score(your_score) {
 
 // クラッカー ----------------------------------------
 function createConfetti_r() {
-    console.log("confetti_called");
     confetti({
         particleCount: 80,
         spread: 75,
@@ -183,7 +191,6 @@ function createConfetti_r() {
     });
 }
 function createConfetti_l() {
-    console.log("confetti_called");
     confetti({
         particleCount: 80,
         spread: 75,
@@ -201,7 +208,7 @@ function createConfetti_l() {
 }
 // -----------------------------------------------------
 
-function load_ranking() {
+function load_ranking(your_score) {
     fetch("./components/ranking_restart.html")
         .then((res) => {
             if (res.ok) {
@@ -214,24 +221,41 @@ function load_ranking() {
             insert_area.innerHTML = html_data;
             document.querySelector(".container").classList.toggle("top");
             const rankingList = document.querySelector(".ranking_table");
-            updateRanking(rankingList);
+            updateRanking(rankingList, your_score);
+
             document.querySelector(".start_btn").addEventListener("click", () => {
                 const challenger_name = document.querySelector(".card_name").value;
-                load_game(challenger_name);
+                if (challenger_name != "") {
+                    load_game(challenger_name);
+                } else {
+                    alert("名前を入力してください！");
+                    return;
+                }
             });
         })
         .catch((er) => console.error("Error!", er));
 }
 
-function updateRanking(rankingList) {
+function updateRanking(rankingList, your_score) {
+    challengers_local = JSON.parse(window.localStorage.getItem("challengeBarometer"));
     rankingList.innerHTML =
         `<li>
             <div class="head_th">順位</div>
             <div class="head_th">名前</div>
             <div class="head_th">スコア</div>
         </li>` +
-        challengers
+        challengers_local
             .sort((a, b) => b.score - a.score)
-            .map((c, index) => `<li><div class="td">${index + 1}</div><div class="td">${c.name}</div><div class="td">${c.score}</div></li>`)
+            .map(
+                (c, index) =>
+                    `<li class="${c.score == your_score ? "challenge_score" : ""}"><div class="td">${index + 1}</div><div class="td">${
+                        c.name
+                    }</div><div class="td">${c.score}</div></li>`
+            )
             .join("");
+}
+
+function resetLocalStorage() {
+    window.localStorage.removeItem("challengeBarometer");
+    console.log("ローカルストレージがリセットされました");
 }

@@ -21,10 +21,17 @@ a:visited {
 }
 body {
     font-size: 1.6rem;
-    background: linear-gradient(to right, #ff0000, #cc0000);
+    /* background: linear-gradient(to right, #f01212, #cc0000); */
+    background: url("./img/pattern_background.svg");
+    backdrop-filter: brightness(0.88) contrast(74%) grayscale(15%) opacity(38%) sepia(41%);
+    background-repeat: repeat;
+    background-size: 200px;
     color: white;
-}
 
+    /* background: url("./img/e0777_1.svg"), linear-gradient(to right, #f01212, #cc0000);
+    background-size: cover;
+    background-repeat: no-repeat; */
+}
 .container {
     width: 100%;
     height: 100svh;
@@ -57,7 +64,7 @@ body {
 
 .wrapper {
     width: 100%;
-    margin-bottom: 3rem;
+    margin-bottom: 1.5rem;
     position: relative;
 }
 
@@ -161,7 +168,7 @@ input.card_name {
 
 #js_max_volume {
     text-align: center;
-    font-size: 32px;
+    font-size: 40px;
     padding: 30px 0;
 }
 
@@ -191,8 +198,15 @@ input.card_name {
 
 #js_cheer_message {
     text-align: center;
+    font-size: 30px;
     padding: 30px 0;
 }
+
+/* #js_challenger_name {
+    color: #000;
+    font-size: 32px;
+    font-weight: 600;
+} */
 
 .your_score_area {
     width: 100%;
@@ -255,14 +269,15 @@ input.card_name {
 
 ul.ranking_table {
     width: 100%;
-    max-height: 350px;
+    max-height: 425px;
     overflow-y: auto;
-    margin-top: 45px;
+    margin-top: 30px;
     text-align: center;
     font-size: 32px;
     background: #ffffff45;
     border-radius: 10px;
     scrollbar-color: #eeeeeeca transparent;
+    box-shadow: 0px 2px 4px #00000029;
 
     & li {
         display: flex;
@@ -274,22 +289,34 @@ ul.ranking_table {
     }
 
     & .head_th {
-        background: #ffcc00;
+        background: #ffcb00;
         color: black;
         font-weight: 600;
     }
     & .head_th,
     .td {
-        width: calc((100% - 200px) / 2);
+        width: calc(100% - 200px - 400px);
     }
     & .head_th:nth-child(1),
     .td:nth-child(1) {
         width: 200px;
     }
+    & .head_th:nth-child(3),
+    .td:nth-child(3) {
+        width: 400px;
+    }
 
     & .td {
         text-align: center;
+        overflow-x: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
+}
+
+.challenge_score {
+    background: rgba(255, 255, 255, 0.313);
+    color: #000000;
 }
 
 ul.ranking_table li:nth-child(2) .td {
