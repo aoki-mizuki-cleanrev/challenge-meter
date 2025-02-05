@@ -143,6 +143,8 @@ function load_your_score(your_score, challenger_name) {
             document.querySelector(".container").classList.toggle("top");
             // challenger-name
             document.querySelector("#js_challenger_name").textContent = challenger_name;
+            // SE：ドラムロール
+            drum_se(true);
             result_score(your_score);
         })
         .catch((er) => console.error("Error!", er));
@@ -158,15 +160,20 @@ function result_score(your_score) {
         display_score.textContent = i;
         i++;
         if (i >= your_score + 1) {
+            // SE：ドラムロール止め
+            drum_se(false);
             clearInterval(timer_id);
             setTimeout(() => {
+                // SE：クラッシュシンバル
+                crash_se();
+
                 // クラッカー
                 document.querySelector(".cracker_container").style.display = "flex";
                 createConfetti_r();
                 createConfetti_l();
                 setTimeout(() => {
                     load_ranking(your_score);
-                }, 2000);
+                }, 2100);
             }, 360);
         }
     }, your_score / (your_score * 500));
@@ -258,4 +265,30 @@ function updateRanking(rankingList, your_score) {
 function resetLocalStorage() {
     window.localStorage.removeItem("challengeBarometer");
     console.log("ローカルストレージがリセットされました");
+}
+
+// -----------------------------------------------------
+const drum_audio = new Audio();
+const crash_audio = new Audio();
+function drum_se(play_status) {
+    drum_audio.src = "./sounds/drum_roll_repeat.mp3";
+    drum_audio.volume = 0.4;
+    drum_audio.loop = true;
+
+    crash_audio.src = "./sounds/crash_cymbal.mp3";
+    crash_audio.volume = 0.4;
+    crash_audio.loop = false;
+
+    if (play_status == true) {
+        console.log("play");
+        drum_audio.play();
+    } else {
+        drum_audio.pause();
+    }
+}
+function crash_se() {
+    crash_audio.src = "./sounds/crash_cymbal.mp3";
+    crash_audio.volume = 0.5;
+    crash_audio.loop = false;
+    crash_audio.play();
 }
