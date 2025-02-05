@@ -47,7 +47,7 @@ body {
 }
 
 .title {
-    font-size: 6rem;
+    font-size: clamp(3.3rem, 7vw, 6rem);
     font-weight: bold;
     text-shadow: 3px 3px 15px rgba(0, 0, 0, 0.7);
     text-align: center;
@@ -87,15 +87,12 @@ body {
     border-radius: 10px;
 
     width: 100%;
-    min-width: 500px;
     max-width: 800px;
-    /* width: fit-content; */
-    /* height: 250px; */
-    padding: 40px 4%;
+    padding: 30px 4%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    gap: 30px;
+    gap: 20px;
     transition: box-shadow 0.3s;
     animation: fade-in 1s;
 
@@ -109,10 +106,10 @@ body {
 
 input.card_name {
     display: block;
-    width: fit-content;
-    min-width: 450px;
+    width: 90%;
+    /* min-width: 450px; */
     padding: 5px 2%;
-    font-size: 42px;
+    font-size: clamp(21px, 3vw, 42px);
     text-align: center;
     border: none;
     border-radius: 0.8rem;
@@ -124,7 +121,7 @@ input.card_name {
     border-radius: 0.8rem;
     text-align: center;
     background: #ffdd57;
-    font-size: 1.6em;
+    font-size: clamp(21px, 5vw, 28px);
     padding: 12px;
     margin-inline: auto;
     cursor: pointer;
@@ -198,13 +195,13 @@ input.card_name {
 
 #js_cheer_message {
     text-align: center;
-    font-size: 30px;
+    font-size: clamp(16px, 6vw, 30px);
     padding: 30px 0;
 }
 
 .your_score_area {
     width: 100%;
-    padding: 80px 0 0 0;
+    padding: 50px 0 0 0;
 
     & > .card {
     }
@@ -241,12 +238,12 @@ input.card_name {
     width: 100%;
     display: flex;
     justify-content: space-between;
-    font-size: 12rem;
+    font-size: clamp(7rem, 7vw, 12rem);
     display: none;
     animation: fade-in 0.3s;
 }
 
-.test {
+/* .test {
     background: #fdf911db;
     background: #f6703bdb;
     background: #66ff00d2;
@@ -255,7 +252,7 @@ input.card_name {
     background: #9835e3d8;
     background: #4860e8d8;
     background: #c0c0c0;
-}
+} */
 
 .ranking_area {
     width: 100%;
@@ -267,7 +264,7 @@ ul.ranking_table {
     overflow-y: auto;
     margin-top: 30px;
     text-align: center;
-    font-size: 32px;
+    font-size: clamp(21px, 3vw, 30px);
     background: #ffffff45;
     border-radius: 10px;
     scrollbar-color: #eeeeeeca transparent;
@@ -286,18 +283,19 @@ ul.ranking_table {
         background: #ffcb00;
         color: black;
         font-weight: 600;
+        font-size: clamp(25px, 3vw, 42px);
     }
     & .head_th,
     .td {
-        width: calc(100% - 200px - 400px);
+        width: calc(100% - 40%);
     }
     & .head_th:nth-child(1),
     .td:nth-child(1) {
-        width: 200px;
+        width: 15%;
     }
     & .head_th:nth-child(3),
     .td:nth-child(3) {
-        width: 400px;
+        width: 25%;
     }
 
     & .td {
@@ -305,6 +303,12 @@ ul.ranking_table {
         overflow-x: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+    }
+}
+
+@media screen and (width < 1070px) {
+    ul.ranking_table {
+        max-height: 400px;
     }
 }
 
