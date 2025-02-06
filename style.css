@@ -318,7 +318,7 @@ ul.ranking_table {
 }
 
 ul.ranking_table li:nth-child(2) .td {
-    font-size: 2.2em;
+    font-size: 1.3em;
     font-weight: bold;
     color: gold;
 }

@@ -1,6 +1,7 @@
 const insert_area = document.querySelector(".insert_area");
 var challengers = JSON.parse(window.localStorage.getItem("challengeBarometer")) ?? [];
 const CHALLENGE_TIME = 5000; //秒: 1000 -> 1sec
+// const CHALLENGE_TIME = 20000; //秒: 1000 -> 1sec
 
 // ============
 
@@ -97,7 +98,7 @@ function load_game(challenger_name) {
                                 let volume = Math.round(Math.sqrt(sum / dataArray.length) * 1000);
                                 // rms の値が音量の目安（0～1程度の範囲）
                                 // console.log("Volume:", rms);
-                                bar.style.width = Math.min(volume / 20, 10) + "%";
+                                bar.style.width = rms * 500 + "%";
                                 if (volume > currentMaxVolume) {
                                     currentMaxVolume = volume;
                                 }
@@ -156,14 +157,18 @@ function result_score(your_score) {
 
     // btn.disabled = true;
     var i = 0;
+    const DRUM_ROLL_INTERVAL = 2000;
+    const DEFAULT_COUNT = 999;
     const timer_id = setInterval(() => {
         display_score.textContent = i;
         i++;
-        if (i >= your_score + 1) {
+        if (i > DEFAULT_COUNT) {
             // SE：ドラムロール止め
             drum_se(false);
             clearInterval(timer_id);
+
             setTimeout(() => {
+                display_score.textContent = your_score; //結果出すタイミング
                 // SE：クラッシュシンバル
                 crash_se();
 
@@ -174,9 +179,9 @@ function result_score(your_score) {
                 setTimeout(() => {
                     load_ranking(your_score);
                 }, 2100);
-            }, 360);
+            }, 300);
         }
-    }, your_score / (your_score * 500));
+    }, DRUM_ROLL_INTERVAL / DEFAULT_COUNT);
     // btn.disabled = false;
 }
 
@@ -275,10 +280,6 @@ function drum_se(play_status) {
     drum_audio.volume = 0.4;
     drum_audio.loop = true;
 
-    crash_audio.src = "./sounds/crash_cymbal.mp3";
-    crash_audio.volume = 0.4;
-    crash_audio.loop = false;
-
     if (play_status == true) {
         console.log("play");
         drum_audio.play();
@@ -291,4 +292,24 @@ function crash_se() {
     crash_audio.volume = 0.5;
     crash_audio.loop = false;
     crash_audio.play();
+}
+
+function debug_screen(screen) {
+    switch (screen) {
+        case "game":
+            load_game("test");
+            break;
+        case "score":
+            php_file = "your_score.html";
+            load_your_score(9999, "test");
+            break;
+        case "ranking":
+            php_file = "ranking_restart.html";
+            load_ranking(9999);
+            break;
+        default:
+            php_file = "ranking_restart.html";
+            load_ranking(9999);
+            break;
+    }
 }
