@@ -1,5 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Teko:wght@300..700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=DotGothic16&family=Teko:wght@300..700&display=swap");
+
 * {
     margin: 0;
     padding: 0;
@@ -22,10 +24,20 @@ a:visited {
 body {
     font-size: 1.6rem;
     /* background: linear-gradient(to right, #f01212, #cc0000); */
-    background: url("./img/pattern_background.svg");
-    backdrop-filter: brightness(0.88) contrast(74%) grayscale(15%) opacity(38%) sepia(41%);
-    background-repeat: repeat;
-    background-size: 207px;
+    /* background: url("./img/pattern_background.svg");
+    backdrop-filter: brightness(0.88) contrast(74%) grayscale(15%) opacity(38%) sepia(41%); */
+    background: rgb(128, 0, 0);
+    background: linear-gradient(90deg, rgba(128, 0, 0, 1) 0%, rgba(255, 255, 255, 1) 50%, rgba(128, 0, 0, 1) 100%);
+    background: linear-gradient(
+        90deg,
+        rgb(58, 6, 6) 0%,
+        rgb(175, 58, 58) 20%,
+        rgb(241, 240, 240) 50%,
+        rgb(187, 54, 54) 80%,
+        rgb(104, 0, 0) 100%
+    );
+    /* background-repeat: repeat; */
+    /* background-size: 207px; */
     color: white;
 
     /* background: url("./img/e0777_1.svg"), linear-gradient(to right, #f01212, #cc0000);
@@ -55,6 +67,10 @@ body {
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow-x: hidden;
+
+    font-family: "DotGothic16", serif;
+    font-weight: 400;
+    font-style: normal;
 }
 
 .insert_area {
@@ -66,6 +82,22 @@ body {
     width: 100%;
     margin-bottom: 1.5rem;
     position: relative;
+    text-align: center;
+    position: relative;
+}
+
+#top_logo {
+    width: 440px;
+    margin-left: 55px;
+}
+
+#top_pallet {
+    position: absolute;
+    top: -120px;
+    left: 330px;
+    z-index: -1;
+    height: 390px;
+    width: auto;
 }
 
 .fill_name_area {
@@ -78,7 +110,7 @@ body {
 
 .card {
     margin-inline: auto;
-    background: rgba(255, 218, 218, 0.136);
+    background: rgba(0, 0, 0, 0.614);
     border-radius: 16px;
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(7.5px);
@@ -98,7 +130,7 @@ body {
 
     &:hover {
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.369);
-        background: linear-gradient(120deg, transparent, rgba(255, 218, 218, 0.215));
+        background: linear-gradient(120deg, transparent, rgba(109, 144, 170, 0.614));
 
         transition: all 0.3s;
     }

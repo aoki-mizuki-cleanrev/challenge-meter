@@ -95,7 +95,7 @@ function load_game(challenger_name) {
                                     sum += normalized * normalized;
                                 }
                                 const rms = Math.sqrt(sum / dataArray.length);
-                                let volume = Math.round(Math.sqrt(sum / dataArray.length) * 1000);
+                                let volume = Math.round(Math.sqrt(sum / dataArray.length) * 10000);
                                 // rms の値が音量の目安（0～1程度の範囲）
                                 // console.log("Volume:", rms);
                                 bar.style.width = rms * 500 + "%";
@@ -289,7 +289,7 @@ function drum_se(play_status) {
 }
 function crash_se() {
     crash_audio.src = "./sounds/crash_cymbal.mp3";
-    crash_audio.volume = 0.5;
+    crash_audio.volume = 1;
     crash_audio.loop = false;
     crash_audio.play();
 }
