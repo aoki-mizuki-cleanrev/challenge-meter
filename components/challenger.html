@@ -1,11 +1,20 @@
 <div class="game_area">
-	<div class="challenger_container">
-		<img src="../img/challenger_smash_transparent.png" class="challenger_cover" alt="" />
-		<video id="video" autoplay playsinline style="margin-left: auto"></video>
-	</div>
+    <div class="challenger_container">
+        <img src="../img/challenger_smash_transparent.png" class="challenger_cover" alt="" />
+        <video id="video" autoplay playsinline style="margin-left: auto"></video>
+        <div class="next_btn_container">
+            <button type="button" id="js_next_button">NEXT<i class="fa-solid fa-angles-right"></i></button>
+        </div>
+    </div>
+    <select id="cameraSelect"></select>
 </div>
 
 <script>
-	// ページが読み込まれたらWebカメラを起動
-	window.addEventListener("load", startWebcam);
+    // // ページが読み込まれたらWebカメラを起動
+    // window.addEventListener("load", startWebcam);
+    // セレクトボックスの変更イベントでカメラ切り替え
+    document.getElementById("cameraSelect").addEventListener("change", switchCamera);
+
+    // ページ読み込み完了後に初期化処理を実行
+    window.addEventListener("load", init);
 </script>
