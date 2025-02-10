@@ -1,4 +1,4 @@
-const insert_area = document.querySelector(".insert_area");
+const insert_area = document.querySelector(".container");
 var challengers = JSON.parse(window.localStorage.getItem("challengeBarometer")) ?? [];
 const CHALLENGE_TIME = 5000; //秒: 1000 -> 1sec
 // const CHALLENGE_TIME = 20000; //秒: 1000 -> 1sec
@@ -24,7 +24,7 @@ function load_top() {
             document.querySelector(".start_btn").addEventListener("click", () => {
                 const challenger_name = document.querySelector(".card_name").value;
                 if (challenger_name != "") {
-                    load_game(challenger_name);
+                    load_challenger(challenger_name);
                 } else {
                     alert("名前を入力してください！");
                     return;
@@ -34,6 +34,111 @@ function load_top() {
         .catch((er) => console.error("Error!", er));
 }
 load_top();
+// ----------------------------------------------
+// 利用可能なカメラデバイスを取得し、セレクトボックスに登録する関数
+async function populateCameraSelect() {
+    try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter((device) => device.kind === "videoinput");
+
+        // 外部カメラを優先するため、内蔵カメラと思われるもの（ラベルに "内蔵" や "Built-in" を含む）を後ろに並べ替え
+        const pattern = /内蔵|builtin|built-in|MacBook Proカメラ \(0000:0001\)/i;
+
+        videoDevices.sort((a, b) => {
+            const isAInternal = pattern.test(a.label);
+            const isBInternal = pattern.test(b.label);
+            if (isAInternal === isBInternal) {
+                // 両者が同じ種類の場合は、ラベル順でソート
+                return a.label.localeCompare(b.label);
+            }
+            // 内蔵なら 1、外部なら -1 を返す（つまり、外部が上位）
+            return isAInternal ? 1 : -1;
+        });
+        console.log(videoDevices);
+        const cameraSelect = document.getElementById("cameraSelect");
+        cameraSelect.innerHTML = "";
+
+        videoDevices.forEach((device, index) => {
+            const option = document.createElement("option");
+            option.value = device.deviceId;
+            option.text = device.label || `カメラ ${index + 1}`;
+            cameraSelect.appendChild(option);
+        });
+    } catch (error) {
+        console.error("カメラデバイスの取得に失敗しました:", error);
+    }
+}
+
+// Webカメラの映像を取得して video 要素に流し込む関数
+async function startWebcam(deviceId) {
+    try {
+        console.log("カメラ開始:", deviceId);
+        // deviceId が指定されていればそのカメラを使用、指定がなければデフォルトのカメラを利用
+        const constraints = {
+            video: deviceId ? { deviceId: { exact: deviceId } } : true,
+            audio: false,
+        };
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        const video = document.getElementById("video");
+        video.srcObject = stream;
+        return stream;
+    } catch (err) {
+        console.error("Webカメラへのアクセスに失敗しました:", err);
+        alert("Webカメラへのアクセスが拒否されました。");
+    }
+}
+
+// カメラ切り替え処理（セレクトボックスの変更時に実行）
+async function switchCamera() {
+    // 既にストリームがある場合は全トラックを停止してリソースを解放
+    if (window.currentStream) {
+        window.currentStream.getTracks().forEach((track) => track.stop());
+    }
+    const selectedDeviceId = document.getElementById("cameraSelect").value;
+    window.currentStream = await startWebcam(selectedDeviceId);
+}
+
+// 初期化処理：カメラ一覧の取得と初期カメラの起動
+async function init() {
+    await populateCameraSelect();
+    const cameraSelect = document.getElementById("cameraSelect");
+    if (cameraSelect.options.length > 0) {
+        // セレクトボックスの最初の項目（外部カメラがあれば優先して上位に来る）を利用してカメラを開始
+        window.currentStream = await startWebcam(cameraSelect.options[0].value);
+    } else {
+        console.error("利用可能なカメラが見つかりません。");
+    }
+}
+// ----------------------------------------------
+
+function load_challenger(challenger_name) {
+    fetch("./components/challenger.html")
+        .then((res) => {
+            if (res.ok) {
+                return res.text();
+            } else {
+                throw new Error("Network response was not ok");
+            }
+        })
+        .then((html_data) => {
+            insert_area.innerHTML = html_data;
+            // document.querySelector(".container").classList.toggle("top");
+            let cd = 1;
+            init();
+            document.getElementById("cameraSelect").addEventListener("change", switchCamera);
+
+            setTimeout(() => {
+                document.querySelector(".challenger_cover").style.display = "block";
+            }, 1000);
+            // setTimeout(() => {
+            //     load_game(challenger_name);
+            // }, 20000);
+            document.querySelector("#js_next_button").addEventListener("click", () => {
+                load_game(challenger_name);
+            });
+        })
+        .catch((er) => console.error("Error!", er));
+}
 // ----------------------------------------------
 function load_game(challenger_name) {
     fetch("./components/game.html")
@@ -48,6 +153,7 @@ function load_game(challenger_name) {
             insert_area.innerHTML = html_data;
             // document.querySelector(".container").classList.toggle("top");
             let cd = 1;
+
             //CountDown
             const timer_id = setInterval(() => {
                 document.querySelector("#js_countdown").textContent -= cd;
@@ -57,6 +163,7 @@ function load_game(challenger_name) {
                     // 表示切り替え
                     document.querySelector("#js_countdown").style.display = "none";
                     document.querySelector(".game_container").style.display = "block";
+                    document.querySelector(".game_time_countdown").style.display = "flex";
 
                     // mic
                     let bar = document.querySelector("#js_volume_bar");
@@ -95,7 +202,7 @@ function load_game(challenger_name) {
                                     sum += normalized * normalized;
                                 }
                                 const rms = Math.sqrt(sum / dataArray.length);
-                                let volume = Math.round(Math.sqrt(sum / dataArray.length) * 1000);
+                                let volume = Math.round(Math.sqrt(sum / dataArray.length) * 10000);
                                 // rms の値が音量の目安（0～1程度の範囲）
                                 // console.log("Volume:", rms);
                                 bar.style.width = rms * 500 + "%";
@@ -108,6 +215,8 @@ function load_game(challenger_name) {
                                 // 10秒以内であれば更新を続ける
                                 if (Date.now() - startTime < CHALLENGE_TIME) {
                                     requestAnimationFrame(updateVolume);
+                                    document.querySelector(".game_time_countdown").textContent =
+                                        CHALLENGE_TIME * 0.001 - parseInt((Date.now() - startTime) * 0.001);
                                 } else {
                                     console.log("10秒が経過しました。更新を停止します。");
                                     console.log("currentMaxVolume", currentMaxVolume);
@@ -116,6 +225,8 @@ function load_game(challenger_name) {
                                     // スコア渡す
                                     load_your_score(currentMaxVolume, challenger_name);
                                 }
+                                //Debug
+                                // requestAnimationFrame(updateVolume);
                             }
 
                             // 音量取得のループ開始
@@ -153,7 +264,7 @@ function load_your_score(your_score, challenger_name) {
 // ----------------------------------------------
 function result_score(your_score) {
     const display_score = document.getElementById("js_score");
-    document.querySelector(".cracker_container").style.display = "none";
+    // document.querySelector(".cracker_container").style.display = "none";
 
     // btn.disabled = true;
     var i = 0;
@@ -165,21 +276,20 @@ function result_score(your_score) {
         if (i > DEFAULT_COUNT) {
             // SE：ドラムロール止め
             drum_se(false);
+            document.querySelector(".light_cover").classList.add("visible");
+            // SE：クラッシュシンバル
             clearInterval(timer_id);
-
+            crash_se();
             setTimeout(() => {
                 display_score.textContent = your_score; //結果出すタイミング
-                // SE：クラッシュシンバル
-                crash_se();
-
                 // クラッカー
-                document.querySelector(".cracker_container").style.display = "flex";
+                // document.querySelector(".cracker_container").style.display = "flex";
                 createConfetti_r();
                 createConfetti_l();
                 setTimeout(() => {
                     load_ranking(your_score);
                 }, 2100);
-            }, 300);
+            }, 200);
         }
     }, DRUM_ROLL_INTERVAL / DEFAULT_COUNT);
     // btn.disabled = false;
@@ -191,7 +301,7 @@ function createConfetti_r() {
         particleCount: 80,
         spread: 75,
         ticks: 385,
-        colors: ["#ffcc00", "#f6703bdb", "#66ff00d2", "#06cafbdb", "#fb06bed8", "#4860e8d8", "#9835e3d8", "#c0c0c0"],
+        colors: ["#f6f342db", "#531ef3f4", "#a6f51fd2", "#06cafbdb", "#fb06bed8", "#ef2d57d8", "#4860e8d8", "#ffffff"],
         angle: 130, // 紙吹雪が飛ぶ方向（指定しないと90＝上向き）
         startVelocity: 70, // 紙吹雪が上に飛ぶ速度
         scalar: 1, // 紙吹雪の大きさ
@@ -207,7 +317,7 @@ function createConfetti_l() {
         particleCount: 80,
         spread: 75,
         ticks: 385,
-        colors: ["#ffcc00", "#f6703bdb", "#66ff00d2", "#06cafbdb", "#fb06bed8", "#4860e8d8", "#9835e3d8", "#c0c0c0"],
+        colors: ["#f6f342db", "#531ef3f4", "#a6f51fd2", "#06cafbdb", "#fb06bed8", "#ef2d57d8", "#4860e8d8", "#ffffff"],
         angle: 40, // 紙吹雪が飛ぶ方向（指定しないと90＝上向き）
         startVelocity: 70, // 紙吹雪が上に飛ぶ速度
         scalar: 1, // 紙吹雪の大きさ
@@ -232,13 +342,14 @@ function load_ranking(your_score) {
         .then((html_data) => {
             insert_area.innerHTML = html_data;
             document.querySelector(".container").classList.toggle("top");
+            document.querySelector(".container").classList.toggle("ranking");
             const rankingList = document.querySelector(".ranking_table");
             updateRanking(rankingList, your_score);
 
             document.querySelector(".start_btn").addEventListener("click", () => {
                 const challenger_name = document.querySelector(".card_name").value;
                 if (challenger_name != "") {
-                    load_game(challenger_name);
+                    load_challenger(challenger_name);
                 } else {
                     alert("名前を入力してください！");
                     return;
@@ -252,9 +363,9 @@ function updateRanking(rankingList, your_score) {
     challengers_local = JSON.parse(window.localStorage.getItem("challengeBarometer"));
     rankingList.innerHTML =
         `<li>
-            <div class="head_th">順位</div>
-            <div class="head_th">名前</div>
-            <div class="head_th">スコア</div>
+			<div class="head_th">Rank</div>
+			<div class="head_th">Name</div>
+			<div class="head_th">Score</div>
         </li>` +
         challengers_local
             .sort((a, b) => b.score - a.score)
@@ -276,7 +387,7 @@ function resetLocalStorage() {
 const drum_audio = new Audio();
 const crash_audio = new Audio();
 function drum_se(play_status) {
-    drum_audio.src = "./sounds/drum_roll_repeat.mp3";
+    drum_audio.src = "./sounds/8bit_countup.mp3";
     drum_audio.volume = 0.4;
     drum_audio.loop = true;
 
@@ -288,8 +399,8 @@ function drum_se(play_status) {
     }
 }
 function crash_se() {
-    crash_audio.src = "./sounds/crash_cymbal.mp3";
-    crash_audio.volume = 0.5;
+    crash_audio.src = "./sounds/ele_restraint.mp3";
+    crash_audio.volume = 1;
     crash_audio.loop = false;
     crash_audio.play();
 }

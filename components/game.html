@@ -1,8 +1,20 @@
-<div class="game_area">
+<div class="game_area" style="justify-content: center">
+    <!-- <div class="challenger_container">
+		<img src="../img/challenger_smash_transparent.png" class="challenger_cover" alt="" />
+		<video id="video" autoplay playsinline style="margin-left: auto"></video>
+	</div> -->
     <div id="js_countdown">3</div>
     <div class="game_container">
-        <div id="js_max_volume">共感ポイント: <span id="js_point">0</span></div>
-        <div id="js_volume_meter"><div id="js_volume_bar"></div></div>
-        <div id="js_cheer_message"><h2>👏 拍手と歓声を！ 👏</h2></div>
+        <div class="card">
+            <div id="js_max_volume">共感ポイント: <span id="js_point">0</span></div>
+            <div id="js_volume_meter"><div id="js_volume_bar"></div></div>
+            <div id="js_cheer_message"><h2>👏 拍手と歓声を！ 👏</h2></div>
+        </div>
     </div>
+    <div class="game_time_countdown">5</div>
 </div>
+
+<script>
+    // ページが読み込まれたらWebカメラを起動
+    window.addEventListener("load", startWebcam);
+</script>
