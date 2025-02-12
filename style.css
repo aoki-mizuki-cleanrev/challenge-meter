@@ -157,6 +157,7 @@ input.card_name {
     border: none;
     border-radius: 0.8rem;
     margin-inline: auto;
+    font-family: "wildeFont";
 }
 .start_btn {
     width: fit-content;
@@ -339,6 +340,9 @@ img.challenger_cover {
 #js_challenger_name {
     font-family: "wildeFont";
     font-size: 5rem;
+}
+span#js_challenger_name {
+    font-family: "ranking_font";
 }
 
 .score_wrapper {
